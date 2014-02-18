@@ -313,7 +313,9 @@ cancelWith (Async t _) e = throwTo t e
 --
 waitAll :: [Async a] -> IO [(Async a, a)]
 waitAll asyncs =
-  atomically . sequence $ map (\a -> do r <- waitSTM a; return (a, r)) asyncs
+  atomically $ foldr (\a b -> fmap toList (waitBoth undefined undefined)) (return []) asyncs where
+    toList (a, b) = [a, b]
+  --atomically . sequence $ map (\a -> do r <- waitSTM a; return (a, r)) asyncs
 
 -- | Wait for any of the supplied asynchronous operations to complete.
 -- The value returned is a pair of the 'Async' that completed, and the
